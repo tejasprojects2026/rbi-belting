@@ -25,7 +25,7 @@ export function buildMessage(details: EnquiryDetails) {
   return `Website enquiry\nName: ${clean(details.name, 100)}\nCompany: ${clean(details.company, 120)}\nPhone: ${clean(details.phone, 20)}\nEmail: ${clean(details.email, 200)}\nCategory: ${clean(details.category, 80)}\nRequirement: ${clean(details.requirement)}`;
 }
 
-export function EnquiryForm({ seed = {}, compact = false }: { seed?: EnquirySeed; compact?: boolean }) {
+export function EnquiryForm({ seed = {}, compact = false, hideWhatsApp = false }: { seed?: EnquirySeed; compact?: boolean; hideWhatsApp?: boolean }) {
   const [error, setError] = useState("");
 
   const send = (kind: "email" | "wa", form: HTMLFormElement) => {
@@ -65,10 +65,10 @@ export function EnquiryForm({ seed = {}, compact = false }: { seed?: EnquirySeed
       </div>
       <div><Label htmlFor="eq-requirement">Describe what you need *</Label><Textarea id="eq-requirement" name="requirement" required maxLength={1000} defaultValue={seed.requirement} rows={compact ? 3 : 5} className="mt-1" placeholder="Part number, size, brand, application or quantity" /></div>
       {error && <p className="text-sm font-medium text-destructive">{error}</p>}
-      <p className="text-xs text-muted-foreground">Your details are not stored. Choose email or WhatsApp to send them.</p>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Button type="button" size="lg" className="h-12" onClick={(event) => { const form = event.currentTarget.form; if (form) send("email", form); }}><Mail />Email requirement</Button>
-        <Button type="button" size="lg" variant="outline" className="h-12 border-whatsapp text-whatsapp hover:bg-whatsapp-soft" onClick={(event) => { const form = event.currentTarget.form; if (form) send("wa", form); }}><MessageCircle />Send on WhatsApp</Button>
+      <p className="text-xs text-muted-foreground">Your details are not stored. {hideWhatsApp ? "Submit by email to send them." : "Choose email or WhatsApp to send them."}</p>
+      <div className={`grid gap-3 ${hideWhatsApp ? "" : "sm:grid-cols-2"}`}>
+        <Button type="button" size="lg" className="h-12" onClick={(event) => { const form = event.currentTarget.form; if (form) send("email", form); }}><Mail />Submit your inquiry</Button>
+        {!hideWhatsApp && <Button type="button" size="lg" variant="outline" className="h-12 border-whatsapp text-whatsapp hover:bg-whatsapp-soft" onClick={(event) => { const form = event.currentTarget.form; if (form) send("wa", form); }}><MessageCircle />Send on WhatsApp</Button>}
       </div>
     </form>
   );
