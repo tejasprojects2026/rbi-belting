@@ -25,7 +25,7 @@ export function buildMessage(details: EnquiryDetails) {
   return `Website enquiry\nName: ${clean(details.name, 100)}\nCompany: ${clean(details.company, 120)}\nPhone: ${clean(details.phone, 20)}\nEmail: ${clean(details.email, 200)}\nCategory: ${clean(details.category, 80)}\nRequirement: ${clean(details.requirement)}`;
 }
 
-export function EnquiryForm({ seed = {}, compact = false, hideWhatsApp = false }: { seed?: EnquirySeed; compact?: boolean; hideWhatsApp?: boolean }) {
+export function EnquiryForm({ seed = {}, compact = false, hideWhatsApp = false, submitLabel = "Submit your inquiry" }: { seed?: EnquirySeed; compact?: boolean; hideWhatsApp?: boolean; submitLabel?: string }) {
   const [error, setError] = useState("");
 
   const send = (kind: "email" | "wa", form: HTMLFormElement) => {
@@ -67,7 +67,7 @@ export function EnquiryForm({ seed = {}, compact = false, hideWhatsApp = false }
       {error && <p className="text-sm font-medium text-destructive">{error}</p>}
       <p className="text-xs text-muted-foreground">Your details are not stored. {hideWhatsApp ? "Submit by email to send them." : "Choose email or WhatsApp to send them."}</p>
       <div className={`grid gap-3 ${hideWhatsApp ? "" : "sm:grid-cols-2"}`}>
-        <Button type="button" size="lg" className="h-12" onClick={(event) => { const form = event.currentTarget.form; if (form) send("email", form); }}><Mail />Submit your inquiry</Button>
+        <Button type="button" size="lg" className="h-12" onClick={(event) => { const form = event.currentTarget.form; if (form) send("email", form); }}><Mail />{submitLabel}</Button>
         {!hideWhatsApp && <Button type="button" size="lg" variant="outline" className="h-12 border-whatsapp text-whatsapp hover:bg-whatsapp-soft" onClick={(event) => { const form = event.currentTarget.form; if (form) send("wa", form); }}><MessageCircle />Send on WhatsApp</Button>}
       </div>
     </form>

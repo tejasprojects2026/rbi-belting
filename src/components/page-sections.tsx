@@ -1,7 +1,8 @@
 import { useEffect,useState,type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight,ArrowUpRight,CheckCircle2,ChevronRight,Download,Factory,Home,MessageSquareText,Tags } from "lucide-react";
+import { ArrowRight,ArrowUpRight,CheckCircle2,ChevronRight,Download,Factory,Home,MessageSquareText,Pause,Play,Tags } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
 import { Dialog,DialogContent,DialogDescription,DialogHeader,DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,9 +17,73 @@ const formCategory=(key:string)=>key==="power-transmission"?"Power Transmission"
 const rangePhotos=(pillar:Pillar,sub:SubCategory)=>sub.slug==="v-belts"?vBeltPhotos:[{image:images[pillar.image],title:sub.name,note:sub.short}];
 export function Breadcrumbs({items}:{items:{label:string;to:string}[]}){return <section className="border-b border-border bg-background"><div className="site-container py-5"><nav aria-label="Breadcrumb"><ol className="flex flex-wrap items-center gap-2 text-sm font-semibold"><li><Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary"><Home className="size-4"/>Home</Link></li>{items.map((item,index)=>{const current=index===items.length-1;return <li key={item.to} className="flex items-center gap-2"><ChevronRight className="size-4 text-muted-foreground/60"/>{current?<span aria-current="page" className="text-primary">{item.label}</span>:<a href={item.to} className="text-muted-foreground hover:text-primary">{item.label}</a>}</li>})}</ol></nav></div></section>}
 export function PageHero({kicker,title,description,image,accent="brand",compact=false}:{kicker:string;title:string;description:string;image?:string;accent?:string;compact?:boolean}){return <section className={`page-hero pattern-${accent} ${compact?"page-hero-compact h-[260px] md:h-[300px]":"page-hero-full"}`}><div className="absolute inset-0 bg-foreground/75"/>{image&&<img src={image} alt="Industrial machinery and components" width={1408} height={912} className="absolute inset-0 -z-10 size-full object-cover"/>}<div className={`site-container relative flex h-full flex-col justify-center text-background ${compact?"py-6":"py-20 md:py-28"}`}><p className="eyebrow text-primary-soft">{kicker}</p><h1 className={`mt-3 max-w-4xl font-black leading-tight ${compact?"text-2xl sm:text-3xl md:text-4xl":"text-4xl md:text-6xl"}`}>{title}</h1><p className={`max-w-2xl text-background/80 ${compact?"mt-3 text-sm leading-6 md:text-base md:leading-7":"mt-6 text-lg leading-8"}`}>{description}</p></div></section>}
-export function SectionHeading({eyebrow,title,text}:{eyebrow?:string;title:string;text?:string}){return <div className="mb-10 max-w-3xl">{eyebrow&&<p className="eyebrow">{eyebrow}</p>}<h2 className="section-title mt-3">{title}</h2>{text&&<p className="mt-4 text-lg leading-8 text-muted-foreground">{text}</p>}</div>}
+export function SectionHeading({eyebrow,title,text}:{eyebrow?:string;title:React.ReactNode;text?:string}){return <div className="mb-10 max-w-3xl">{eyebrow&&<p className="eyebrow">{eyebrow}</p>}<h2 className="section-title mt-3">{title}</h2>{text&&<p className="mt-4 text-lg leading-8 text-muted-foreground">{text}</p>}</div>}
 export function PillarCards(){return <div className="grid gap-5 lg:grid-cols-3">{pillarList.map(p=><article key={p.key} className={`pillar-card pillar-${p.key}`}><img src={images[p.image]} alt={`${p.name} industrial equipment`} width={1408} height={912} loading="lazy"/><div className="p-6"><span className="eyebrow">Division 0{pillarList.indexOf(p)+1}</span><h3 className="mt-2 text-2xl font-black">{p.name}</h3><p className="mt-3 leading-7 text-muted-foreground">{p.description}</p><Button asChild variant="link" className="mt-3 px-0"><Link to={`/${p.key}` as "/power-transmission"|"/automation"|"/adhesives"}>Explore range <ArrowRight/></Link></Button></div></article>)}</div>}
-export function BrandStrip({brands}:{brands:string[]}){return <div className="brand-strip" aria-label="Available brands"><div className="brand-track">{[...brands,...brands].map((b,i)=><div className="brand-chip" key={`${b}-${i}`}>{b}</div>)}</div></div>}
+export function BrandStrip({ brands }: { brands: string[] }) {
+  const [api, setApi] = useState<CarouselApi>();
+  const [playing, setPlaying] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+
+  useEffect(() => {
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setPlaying(!motion.matches);
+    update();
+    motion.addEventListener("change", update);
+    return () => motion.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    if (!api || !playing || hovered || focused) return;
+    const timer = window.setInterval(() => {
+      if (!document.hidden) api.scrollNext();
+    }, 3000);
+    return () => window.clearInterval(timer);
+  }, [api, playing, hovered, focused]);
+
+  if (!brands.length) return null;
+  // Extra slides keep short brand lists looping even with four tiles visible.
+  const slides = brands.length > 4 ? brands : [...brands, ...brands, ...brands];
+  const controlClass = "static size-9 translate-y-0 rounded-none border-background/25 bg-transparent text-background hover:bg-background hover:text-foreground";
+
+  return (
+    <Carousel
+      opts={{ align: "start", loop: true }}
+      setApi={setApi}
+      className="brand-strip min-w-0"
+      aria-label="Available brands"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onFocusCapture={() => setFocused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
+      }}
+    >
+      <CarouselContent className="ml-0 touch-pan-y" aria-live="off">
+        {slides.map((brand, index) => (
+          <CarouselItem key={`${brand}-${index}`} className="basis-1/2 pl-0 sm:basis-1/3 lg:basis-1/4" aria-label={brand}>
+            <div className="brand-tile">{brand}</div>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <div className="mt-3 flex justify-end gap-2">
+        <CarouselPrevious className={controlClass} title="Previous brands" />
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className={controlClass}
+          aria-label={playing ? "Pause automatic sliding" : "Start automatic sliding"}
+          title={playing ? "Pause automatic sliding" : "Start automatic sliding"}
+          onClick={() => setPlaying((value) => !value)}
+        >
+          {playing ? <Pause className="size-4" /> : <Play className="size-4" />}
+        </Button>
+        <CarouselNext className={controlClass} title="Next brands" />
+      </div>
+    </Carousel>
+  );
+}
 export function CategoryGrid({pillar}:{pillar:Pillar}){const [selected,setSelected]=useState<SubCategory|null>(null);return <><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{pillar.subcategories.map((s,i)=><article className="category-card" key={s.slug}><span className="text-xs font-black text-category">0{i+1}</span><h3 className="mt-5 text-xl font-black">{s.name}</h3><p className="mt-3 min-h-20 text-sm leading-6 text-muted-foreground">{s.short}</p><div className="mt-6 flex flex-wrap gap-2"><Button type="button" size="sm" onClick={()=>setSelected(s)}>View range <ArrowRight/></Button><Button asChild variant="outline" size="sm"><a href={`/${pillar.key}/${s.slug}#enquire`}>Quick enquiry</a></Button></div></article>)}</div><ProductRangeDialog pillar={pillar} sub={selected} open={!!selected} onOpenChange={open=>!open&&setSelected(null)}/></>}
 function ProductRangeDialog({pillar,sub,open,onOpenChange}:{pillar:Pillar;sub:SubCategory|null;open:boolean;onOpenChange:(open:boolean)=>void}){
 const [photo,setPhoto]=useState(0);

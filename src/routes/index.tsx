@@ -154,7 +154,16 @@ function Home() {
 
       <section className="bg-foreground py-16 text-background">
         <div className="site-container">
-          <SectionHeading eyebrow="Authorized supply" title="Fast-moving brands for urgent industrial requirements" />
+          <SectionHeading
+            eyebrow="Authorized supply"
+            title={
+              <>
+                 <span className="block whitespace-nowrap text-[1.05rem] leading-[1.08] min-[390px]:text-[1.25rem] sm:hidden">Fast-moving brands for</span>
+                 <span className="block whitespace-nowrap text-[1.05rem] leading-[1.08] min-[390px]:text-[1.25rem] sm:hidden">urgent industrial requirements</span>
+                <span className="hidden sm:inline">Fast-moving brands for urgent industrial requirements</span>
+              </>
+            }
+          />
           <BrandStrip brands={featuredBrands} />
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {featuredBrands.map((brand) => (
@@ -191,7 +200,16 @@ function Home() {
 
       <section className="pattern-shared bg-muted py-20">
         <div className="site-container">
-          <SectionHeading eyebrow="Why manufacturers call us" title="Fast answers. Genuine products. Practical support." />
+          <SectionHeading
+            eyebrow="Why manufacturers call us"
+            title={
+              <>
+                <span className="block whitespace-nowrap text-[1.05rem] leading-[1.08] min-[390px]:text-[1.25rem] sm:hidden">Fast answers. Genuine products.</span>
+                <span className="block whitespace-nowrap text-[1.05rem] leading-[1.08] min-[390px]:text-[1.25rem] sm:hidden">Practical support.</span>
+                <span className="hidden sm:inline">Fast answers. Genuine products. Practical support.</span>
+              </>
+            }
+          />
           <div className="grid gap-5 md:grid-cols-3">
             {(
               [
@@ -295,11 +313,11 @@ function Home() {
                 Ask for a brand
               </Button>
             </div>
-            <div className="flex flex-wrap gap-2.5">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2.5">
               {allBrands.map((brand, index) => (
                 <div
                   key={brand}
-                  className={`inline-flex min-h-12 items-center border px-4 py-2 text-sm font-black shadow-sm transition hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary-foreground ${brandThemes[index % brandThemes.length]}`}
+                  className={`inline-flex min-h-10 items-center border px-3 py-1.5 text-xs font-black leading-tight shadow-sm transition hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary-foreground sm:min-h-12 sm:px-4 sm:py-2 sm:text-sm ${brandThemes[index % brandThemes.length]}`}
                 >
                   <span className="mr-3 text-xs font-black opacity-50">{String(index + 1).padStart(2, "0")}</span>
                   {brand}
